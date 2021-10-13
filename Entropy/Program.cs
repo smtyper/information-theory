@@ -20,7 +20,8 @@ var pixels = GetImagePixels(blackWhiteImage);
 var imageEntropy = GetEntropy(pixels);
 var imageInformation = pixels.Count * imageEntropy;
 
-Console.WriteLine();
+Console.WriteLine($"{nameof(textEntropy)}: {textEntropy}\t{nameof(imageEntropy)}: {imageEntropy}");
+Console.WriteLine($"{nameof(textInformation)}: {textInformation}\t{nameof(imageInformation)}: {imageInformation}");
 
 static IReadOnlyCollection<TPixel> GetImagePixels<TPixel>(Image<TPixel> image)
     where TPixel : unmanaged, IPixel<TPixel> => image.GetPixelMemoryGroup()
