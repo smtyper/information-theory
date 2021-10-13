@@ -23,6 +23,23 @@ var imageInformation = pixels.Count * imageEntropy;
 Console.WriteLine($"{nameof(textEntropy)}: {textEntropy}\t{nameof(imageEntropy)}: {imageEntropy}");
 Console.WriteLine($"{nameof(textInformation)}: {textInformation}\t{nameof(imageInformation)}: {imageInformation}");
 
+foreach (var compression in new[] { 2, 4, 8 })
+{
+    using var compressedImage = blackWhiteImage.Clone(context =>
+        context.Pad(blackWhiteImage.Width / compression, blackWhiteImage.Height / compression));
+    var compressedImagePixels = GetImagePixels(compressedImage);
+
+    var compressedImageEntropy = GetEntropy(compressedImagePixels);
+    var compressedImageInformation = compressedImageEntropy * compressedImagePixels.Count;
+
+    Console.Write($"compression: 1 / {compression}\t");
+    Console.Write($"entropy:{compressedImageEntropy}\t");
+    Console.Write($"information: {compressedImageInformation}\t");
+    Console.Write($"comparison: {imageInformation / compressedImageInformation}\n");
+}
+
+Console.WriteLine();
+
 static IReadOnlyCollection<TPixel> GetImagePixels<TPixel>(Image<TPixel> image)
     where TPixel : unmanaged, IPixel<TPixel> => image.GetPixelMemoryGroup()
     .Single()
