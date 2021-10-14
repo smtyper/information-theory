@@ -2,21 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-var bookText = await File.ReadAllTextAsync("source.txt");
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+var textPath = configuration["TextPath"];
+var imagePath = configuration["ImagePath"];
+
+
+var bookText = await File.ReadAllTextAsync(textPath);
 var textEntropy = GetEntropy(bookText.ToCharArray());
 var textInformation = bookText.Length * textEntropy;
 
-await using var imageFileStream = File.OpenRead("source.jpg");
+await using var imageFileStream = File.OpenRead(imagePath);
 
 using var sourceImage = await Image.LoadAsync<L8>(Configuration.Default, imageFileStream);
 using var grayscaleImage = sourceImage.Clone(context => context.Grayscale());
-
-await grayscaleImage.SaveAsJpegAsync("8b.jpeg");
 
 var pixels = GetImagePixels(grayscaleImage);
 var imageEntropy = GetEntropy(pixels);
