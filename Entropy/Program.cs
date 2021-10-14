@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
@@ -15,9 +16,12 @@ var configuration = new ConfigurationBuilder()
 
 var textFile = configuration["TextFile"];
 var bookText = await File.ReadAllTextAsync(textFile);
-var characherArray = bookText.ToCharArray();
+var characherArray = bookText
+    .Where(chr => chr is not '\r')
+    .Select(chr => chr is '\n' ? @"\n" : chr.ToString())
+    .ToArray();
 
-var (textEntropy, textInformation) = await GetInformationAsync(characherArray);
+var (textEntropy, textInformation) = await GetInformationAsync(characherArray, $"{textFile}.results.tsv");
 
 var imageFile = configuration["ImageFile"];
 await using var imageFileStream = File.OpenRead(imageFile);
@@ -28,7 +32,7 @@ var intensities = GetImagePixels(grayscaleImage)
     .Select(pixel => pixel.PackedValue)
     .ToArray();
 
-var (imageEntropy, imageInformation) = await GetInformationAsync(intensities);
+var (imageEntropy, imageInformation) = await GetInformationAsync(intensities, $"{imageFile}.results.tsv");
 
 
 static IReadOnlyCollection<TPixel> GetImagePixels<TPixel>(Image<TPixel> image)
@@ -51,7 +55,8 @@ static async Task<(double Entropy, double Information)> GetInformationAsync<TEle
 
     File.Delete(savePath);
     await File.AppendAllLinesAsync(savePath, elementGroups
+        .OrderBy(elementGroup => elementGroup.Key)
         .Select(elementGroup => string.Join('\t', elementGroup.Key, elementGroup.Count, elementGroup.Chance))
-        .Append($"entropy: {entropy}\tinformation: {information}"));
+        .Append($"entropy: {entropy}\tinformation: {information}"), Encoding.Unicode);
     return (entropy, information);
 }
