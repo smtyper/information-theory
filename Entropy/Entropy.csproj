@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Update="source.jpg">
+      <None Update="elderOne.jpg">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="source.txt">
+      <None Update="mountainsOfMadness.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="appsettings.json">
