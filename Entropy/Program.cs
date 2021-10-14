@@ -14,9 +14,11 @@ var textInformation = bookText.Length * textEntropy;
 await using var imageFileStream = File.OpenRead("source.jpg");
 
 using var sourceImage = await Image.LoadAsync<L8>(Configuration.Default, imageFileStream);
-using var blackWhiteImage = sourceImage.Clone(context => context.BlackWhite());
+using var grayscaleImage = sourceImage.Clone(context => context.Grayscale());
 
-var pixels = GetImagePixels(blackWhiteImage);
+await grayscaleImage.SaveAsJpegAsync("8b.jpeg");
+
+var pixels = GetImagePixels(grayscaleImage);
 var imageEntropy = GetEntropy(pixels);
 var imageInformation = pixels.Count * imageEntropy;
 
@@ -25,8 +27,8 @@ Console.WriteLine($"{nameof(textInformation)}: {textInformation}\t{nameof(imageI
 
 foreach (var compression in new[] { 2, 4, 8 })
 {
-    using var compressedImage = blackWhiteImage.Clone(context =>
-        context.Pad(blackWhiteImage.Width / compression, blackWhiteImage.Height / compression));
+    using var compressedImage = grayscaleImage.Clone(context =>
+        context.Pad(grayscaleImage.Width / compression, grayscaleImage.Height / compression));
     var compressedImagePixels = GetImagePixels(compressedImage);
 
     var compressedImageEntropy = GetEntropy(compressedImagePixels);
