@@ -13,31 +13,50 @@ using SixLabors.ImageSharp.Processing;
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
+var destinationFolder = configuration["DestinationFolder"];
 
-var textFile = configuration["TextFile"];
-var bookText = await File.ReadAllTextAsync(textFile);
+var textFilePath = configuration["TextFile"];
+var bookText = await File.ReadAllTextAsync(textFilePath);
 var characherArray = bookText
     .Where(chr => chr is not '\r')
     .Select(chr => chr is '\n' ? @"\n" : chr.ToString())
     .ToArray();
 
-var (textEntropy, textInformation) = await GetInformationAsync(characherArray, $"{textFile}.results.tsv");
+var (textEntropy, textInformation) = await GetInformationAsync(characherArray, Path.Combine(destinationFolder,
+    $"{Path.GetFileName(textFilePath)}.results.tsv"));
 
-var imageFile = configuration["ImageFile"];
-await using var imageFileStream = File.OpenRead(imageFile);
+var imageFilePath = configuration["ImageFile"];
+await using var imageFileStream = File.OpenRead(imageFilePath);
 using var sourceImage = await Image.LoadAsync<L8>(Configuration.Default, imageFileStream);
 using var grayscaleImage = sourceImage.Clone(context => context.Grayscale());
-await grayscaleImage.SaveAsJpegAsync("grayscale.jpg");
-var intensities = GetImagePixels(grayscaleImage)
+var intensities = GetImagePixelIntensities(grayscaleImage);
+
+var (imageEntropy, imageInformation) = await GetInformationAsync(intensities, Path.Combine(destinationFolder,
+    $"{Path.GetFileName(imageFilePath)}.results.tsv"));
+await grayscaleImage.SaveAsJpegAsync(Path.Combine(destinationFolder, "grayscale.jpg"));
+
+var compressionImageResults = await new[] { 2, 4, 8, 16 }
+    .ToAsyncEnumerable()
+    .SelectAwait(async compression =>
+    {
+        var compressedImageName = $"{Path.GetFileNameWithoutExtension(imageFilePath)}x{compression}";
+        var resultSavePath = Path.Combine(destinationFolder, "compressed", $"{compressedImageName}.result.tsv");
+        var imageSavePath = Path.Combine(destinationFolder, "compressed", $"{compressedImageName}.jpeg");
+
+        using var compressedImage = grayscaleImage.Clone(context => context
+            .Pad(grayscaleImage.Width / compression, grayscaleImage.Height / compression));
+
+        var compressedImageIntensities = GetImagePixelIntensities(compressedImage);
+        var (entropy, information) = await GetInformationAsync(compressedImageIntensities, resultSavePath);
+        await compressedImage.SaveAsJpegAsync(imageSavePath);
+
+        return (entropy, information);
+    })
+    .ToArrayAsync();
+
+static IReadOnlyCollection<byte> GetImagePixelIntensities(Image<L8> image) => image.GetPixelMemoryGroup().Single()
+    .ToArray()
     .Select(pixel => pixel.PackedValue)
-    .ToArray();
-
-var (imageEntropy, imageInformation) = await GetInformationAsync(intensities, $"{imageFile}.results.tsv");
-
-
-static IReadOnlyCollection<TPixel> GetImagePixels<TPixel>(Image<TPixel> image)
-    where TPixel : unmanaged, IPixel<TPixel> => image.GetPixelMemoryGroup()
-    .Single()
     .ToArray();
 
 static async Task<(double Entropy, double Information)> GetInformationAsync<TElement>(
@@ -53,6 +72,7 @@ static async Task<(double Entropy, double Information)> GetInformationAsync<TEle
     if (savePath is null)
         return (entropy, information);
 
+    Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
     File.Delete(savePath);
     await File.AppendAllLinesAsync(savePath, elementGroups
         .OrderBy(elementGroup => elementGroup.Key)
