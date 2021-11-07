@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 
 var configuration = new ConfigurationBuilder()
@@ -14,3 +16,13 @@ await using (var sourceFileStream = File.OpenRead(sourceFilePath))
 
     await sourceFileStream.CopyToAsync(compressionStream);
 }
+
+var fileChars = (await File.ReadAllTextAsync(sourceFilePath)).ToCharArray();
+var charGroups = fileChars
+    .GroupBy(element => element)
+    .Select(group => (group.Key, Count: group.Count(), Chance: group.Count() / (double)fileChars.Length))
+    .ToArray();
+var entropy = charGroups.Sum(group => group.Chance * Math.Log2(1 / group.Chance));
+var redundancy = Math.Log2(charGroups.Length) - entropy;
+
+Console.WriteLine(redundancy);
