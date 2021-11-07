@@ -17,10 +17,7 @@ await using (var sourceFileStream = File.OpenRead(sourceFilePath))
     await sourceFileStream.CopyToAsync(compressionStream);
 }
 
-var fileChars = (await File.ReadAllTextAsync(sourceFilePath))
-    .Where(chr => chr is not '\r')
-    .Select(chr => chr is '\n' ? @"\n" : chr.ToString())
-    .ToArray();
+var fileChars = (await File.ReadAllTextAsync(sourceFilePath)).ToCharArray();
 var charGroups = fileChars
     .GroupBy(chr => chr)
     .Select(group => (group.Key, Count: group.Count(), Chance: group.Count() / (double)fileChars.Length))
