@@ -20,7 +20,9 @@ await using (var sourceFileStream = File.OpenRead(sourceFilePath))
 var fileChars = (await File.ReadAllTextAsync(sourceFilePath)).ToCharArray();
 var charGroups = fileChars
     .GroupBy(chr => chr)
-    .Select(group => (group.Key, Count: group.Count(), Chance: group.Count() / (double)fileChars.Length))
+    .Select(group => (group.Key,
+        Count: group.Count(),
+        Chance: group.Count() / (double)fileChars.Length))
     .ToArray();
 var entropy = charGroups.Sum(group => group.Chance * Math.Log2(1 / group.Chance));
 var redundancy = Math.Log2(charGroups.Length) - entropy;
