@@ -17,12 +17,15 @@ await using (var sourceFileStream = File.OpenRead(sourceFilePath))
     await sourceFileStream.CopyToAsync(compressionStream);
 }
 
-var fileChars = (await File.ReadAllTextAsync(sourceFilePath)).ToCharArray();
+var fileChars = (await File.ReadAllTextAsync(sourceFilePath))
+    .Where(chr => chr is not '\r')
+    .Select(chr => chr is '\n' ? @"\n" : chr.ToString())
+    .ToArray();
 var charGroups = fileChars
-    .GroupBy(element => element)
+    .GroupBy(chr => chr)
     .Select(group => (group.Key, Count: group.Count(), Chance: group.Count() / (double)fileChars.Length))
     .ToArray();
 var entropy = charGroups.Sum(group => group.Chance * Math.Log2(1 / group.Chance));
 var redundancy = Math.Log2(charGroups.Length) - entropy;
 
-Console.WriteLine(redundancy);
+Console.WriteLine($"entropy: {entropy}\nredundancy: {redundancy}");
