@@ -61,6 +61,16 @@ var result = vectors
     .Where(pair => (pair.probability >= 0.5) == pair.realResult)
     .ToArray();
 
+var successPercent = (double)result.Length / (vectors.Length - trainingSampleSize);
+Console.WriteLine($@"{nameof(theta)} =
+[
+	{string.Join(",\n\t", theta)}
+]
+{nameof(l)} = {l}
+{nameof(successPercent)} = {successPercent}
+");
+
+double GetLikehoodFunction(double[] currentTheta) => vectors
     .Sum(pair =>
     {
         var (y, vector) = pair;
