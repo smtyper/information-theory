@@ -28,20 +28,20 @@ var vectors = (await File.ReadAllLinesAsync(dbFilePath))
     .ToArray();
 var trainingVectors = vectors.Take(trainingSampleSize).ToArray();
 
-var teta = new[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-var l = GetLikehoodFunction(teta);
+var theta = new[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+var l = GetLikehoodFunction(theta);
 var step = 0.000005;
 
 while (true)
 {
-    var gradient = GetGradient(teta);
+    var gradient = GetGradient(theta);
     var oldL = l;
 
-    teta = teta
+    theta = theta
         .Zip(gradient.Select(value => value * step).ToArray())
         .Select(pair => pair.First + pair.Second)
         .ToArray();
-    l = GetLikehoodFunction(teta);
+    l = GetLikehoodFunction(theta);
 
     if (l < oldL)
         break;
@@ -53,7 +53,7 @@ var result = vectors
     {
         var (y, vector) = pair;
 
-        var probability = GetProbability(teta, vector, -1);
+        var probability = GetProbability(theta, vector, -1);
         var realResult = y is 1;
 
         return (probability, realResult);
@@ -61,25 +61,24 @@ var result = vectors
     .Where(pair => (pair.probability >= 0.5) == pair.realResult)
     .ToArray();
 
-double GetLikehoodFunction(double[] currentTeta) => vectors
     .Sum(pair =>
     {
         var (y, vector) = pair;
 
-        var value = Math.Pow(GetProbability(currentTeta, vector, -1), y) *
-                    Math.Pow(GetProbability(currentTeta, vector, 1), 1 - y);
+        var value = Math.Pow(GetProbability(currentTheta, vector, -1), y) *
+                    Math.Pow(GetProbability(currentTheta, vector, 1), 1 - y);
 
         var logValue = Math.Log(value);
 
         return logValue;
     });
 
-double[] GetGradient(double[] currentTeta) => trainingVectors
+double[] GetGradient(double[] currentTheta) => trainingVectors
     .Select(pair =>
     {
         var (y, vector) = pair;
 
-        var probability = GetProbability(currentTeta, vector, -1);
+        var probability = GetProbability(currentTheta, vector, -1);
 
         var resultVector = vector
             .Select(x => x * (y - probability))
@@ -93,8 +92,8 @@ double[] GetGradient(double[] currentTeta) => trainingVectors
         .Select(pair => pair.First + pair.Second)
         .ToArray());
 
-static double GetProbability(double[] currentTeta, double[] vector, int unit) =>
-    1 / (1 + Math.Pow(Math.E, unit * Multiply(currentTeta, vector).Sum()));
+static double GetProbability(double[] currentTheta, double[] vector, int unit) =>
+    1 / (1 + Math.Pow(Math.E, unit * Multiply(currentTheta, vector).Sum()));
 
 static double[] Multiply(IEnumerable<double> first, IEnumerable<double> second) => first
     .Zip(second)
