@@ -28,6 +28,20 @@ var vectors = (await File.ReadAllLinesAsync(dbFilePath))
     .ToArray();
 var trainingVectors = vectors.Take(trainingSampleSize).ToArray();
 
+
+double GetLikehoodFunction(double[] currentTeta) => vectors
+    .Sum(pair =>
+    {
+        var (y, vector) = pair;
+
+        var value = Math.Pow(GetProbability(currentTeta, vector, -1), y) *
+                    Math.Pow(GetProbability(currentTeta, vector, 1), 1 - y);
+
+        var logValue = Math.Log(value);
+
+        return logValue;
+    });
+
 double[] GetGradient(double[] currentTeta) => trainingVectors
     .Select(pair =>
     {
