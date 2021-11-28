@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entropy", "Entropy\Entropy.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compression", "Compression\Compression.csproj", "{C854EF32-1025-43C7-9252-01CA6DC20982}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GradientDescent", "GradientDescent\GradientDescent.csproj", "{45BBEBFC-D49C-4816-B1B5-5D2BEEFDFA30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{C854EF32-1025-43C7-9252-01CA6DC20982}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C854EF32-1025-43C7-9252-01CA6DC20982}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C854EF32-1025-43C7-9252-01CA6DC20982}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45BBEBFC-D49C-4816-B1B5-5D2BEEFDFA30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45BBEBFC-D49C-4816-B1B5-5D2BEEFDFA30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45BBEBFC-D49C-4816-B1B5-5D2BEEFDFA30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45BBEBFC-D49C-4816-B1B5-5D2BEEFDFA30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
