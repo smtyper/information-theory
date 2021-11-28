@@ -9,6 +9,8 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 var dbFilePath = configuration["DbFile"];
+var trainingSampleSize = int.Parse(configuration["TrainingSampleSize"]);
+
 var vectors = (await File.ReadAllLinesAsync(dbFilePath))
     .Skip(2)
     .Select(line =>
@@ -24,3 +26,4 @@ var vectors = (await File.ReadAllLinesAsync(dbFilePath))
         return (y, vector);
     })
     .ToArray();
+var trainingVectors = vectors.Take(trainingSampleSize).ToArray();
