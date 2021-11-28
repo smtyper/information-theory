@@ -28,6 +28,38 @@ var vectors = (await File.ReadAllLinesAsync(dbFilePath))
     .ToArray();
 var trainingVectors = vectors.Take(trainingSampleSize).ToArray();
 
+var teta = new[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+var l = GetLikehoodFunction(teta);
+var step = 0.000005;
+
+while (true)
+{
+    var gradient = GetGradient(teta);
+    var oldL = l;
+
+    teta = teta
+        .Zip(gradient.Select(value => value * step).ToArray())
+        .Select(pair => pair.First + pair.Second)
+        .ToArray();
+    l = GetLikehoodFunction(teta);
+
+    if (l < oldL)
+        break;
+}
+
+var result = vectors
+    .Skip(trainingSampleSize)
+    .Select(pair =>
+    {
+        var (y, vector) = pair;
+
+        var probability = GetProbability(teta, vector, -1);
+        var realResult = y is 1;
+
+        return (probability, realResult);
+    })
+    .Where(pair => (pair.probability >= 0.5) == pair.realResult)
+    .ToArray();
 
 double GetLikehoodFunction(double[] currentTeta) => vectors
     .Sum(pair =>
