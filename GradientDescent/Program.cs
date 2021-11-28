@@ -27,3 +27,30 @@ var vectors = (await File.ReadAllLinesAsync(dbFilePath))
     })
     .ToArray();
 var trainingVectors = vectors.Take(trainingSampleSize).ToArray();
+
+double[] GetGradient(double[] currentTeta) => trainingVectors
+    .Select(pair =>
+    {
+        var (y, vector) = pair;
+
+        var probability = GetProbability(currentTeta, vector, -1);
+
+        var resultVector = vector
+            .Select(x => x * (y - probability))
+            .ToArray();
+
+        return resultVector;
+
+    })
+    .Aggregate((first, second) => first
+        .Zip(second)
+        .Select(pair => pair.First + pair.Second)
+        .ToArray());
+
+static double GetProbability(double[] currentTeta, double[] vector, int unit) =>
+    1 / (1 + Math.Pow(Math.E, unit * Multiply(currentTeta, vector).Sum()));
+
+static double[] Multiply(IEnumerable<double> first, IEnumerable<double> second) => first
+    .Zip(second)
+    .Select(pair => pair.First * pair.Second)
+    .ToArray();
